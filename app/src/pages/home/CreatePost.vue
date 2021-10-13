@@ -3,7 +3,7 @@
         <ActionBar>
           <StackLayout orientation="horizontal">
             <Label text="Post a message"></Label>
-            <Button v-if="messageContent" @tap="postMessage">Send</Button>
+            <Button  @tap="postMessage">Send</Button>
           </StackLayout>
         </ActionBar>
         <StackLayout v-if="!showPicker">
@@ -20,22 +20,35 @@
             </FlexboxLayout>
           </StackLayout>
           <StackLayout>
-            <TextField v-model="message" />
+            <TextField v-model="messageContent" />
           </StackLayout>
         </StackLayout>
     </Page>
 </template>
 
 <script>
+  import { apolloClient } from '../../../app.js'
+   import { gql } from "apollo-boost";
   export default {
+  
     data() {
       return {
         messageContent: '',
       };
     },
     methods:{
-      postMessage(){
-        console.log('posting,...')
+      async postMessage(){
+        console.log(this.messageContent);
+        const { data } = await apolloClient.mutate({
+          mutation: gql`
+            mutation($data: PostInput!){
+              CreatePost(data: $data)
+            }`,
+          variables:{
+            data: { message: this.messageContent}
+          }
+        })
+        console.log(data);
       }
     }
   }
