@@ -1,13 +1,17 @@
-<template lang="html">
+<template>
     <Page>
         <ActionBar>
-            <Label text="Search"></Label>
+            <Label text="Post a message"></Label>
         </ActionBar>
-
-        <GridLayout class="page__content">
-            <Label class="page__content-icon fas" text.decode="&#xf002;"></Label>
-            <Label class="page__content-placeholder" :text="message"></Label>
-        </GridLayout>
+        <StackLayout>
+          <StackLayout orientation="horizontal">
+            <FlexboxLayout orientation="horizontal">
+              <Label :text="'fa-clock-o' | fonticon"></Label>
+              <Label text="Direct"></Label>
+              <Label :text="'fa-caret-down' | fonticon"></Label>
+            </FlexboxLayout>
+          </StackLayout>
+        </StackLayout>
     </Page>
 </template>
 

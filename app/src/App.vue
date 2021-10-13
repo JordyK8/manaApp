@@ -1,4 +1,5 @@
 <template lang="html">
+    
     <BottomNavigation>
         <TabStrip>
             <TabStripItem class="navigation__item">
@@ -29,7 +30,7 @@
 
         <TabContentItem>
             <Frame id="search">
-                <Search/>
+                <CreatePost />
             </Frame>
         </TabContentItem>
 
@@ -40,14 +41,14 @@
 <script>
   import Home from "./pages/home/Home.vue";
   import Browse from "./components/Browse.vue";
-  import Search from "./pages/search/Search.vue";
+  import CreatePost from "./pages/home/CreatePost.vue";
+ 
 
   export default {
     components: {
       Home,
       Browse,
-      Search
-    }
+      CreatePost    }
   };
 </script>
 

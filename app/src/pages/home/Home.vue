@@ -1,27 +1,41 @@
 <template>
     <Page backgroundColor="lightgrey">
     <StackLayout>
-      <GridLayout columns="50, *, 50" rows="50, 50" backgroundColor="#3c495e">
-        <Label text="0,0" row="0" col="0" backgroundColor="#43b883"/>
-        <Label text="0,1" row="0" col="1"  backgroundColor="#1c6b48"/>
-        <Label text="1,0" row="0" col="3"  backgroundColor="#289062"/>
-        <Label text="hoi" row="1" colSpan="3" backgroundColor="#289062"/>
+      <GridLayout columns="50, *, 50" rows="45, 70" backgroundColor="black">
+        <Label  borderRadius="50" height="30" width="30" backgroundColor="white" style="text-align: center" fontSize="15" class="fa" :text="'fa-bars' | fonticon" row="0" col="0" />
+        <TextView paddingLeft="15" height="35" padding="5" class="align-center transparent" editable="false" row="0" col="1" borderRadius="8">
+          <FormattedString >
+            <Span class="fa" :text="'fa-search' | fonticon" fontSize="20"/>
+            <Span text="M" fontSize="15" color="transparent"/>
+            <Span text="My timeline" fontSize="15" />
+          </FormattedString>
+        </TextView>
+        <Label row="0" col="3" color="white" style="text-align: center" fontSize="22" class="fa" :text="'fa-bell' | fonticon" />
+        <Label class="text-center" row="0" col="3" fontSize="10"  fontWeigth="bold" marginLeft="12" marginBottom="25" backgroundColor="red" color="white" borderRadius="50" borderColor="red" borderWidth="1" height="13.5" width="13.5" text="16" />
+        <StackLayout padding="10" row="1" colSpan="3" >
+          <Label color="white" fontSize="22" text="My timeline"/>
+          <FlexboxLayout orientation="vertical">
+            <Label color="white" marginLeft="5" fontSize="12" class="fa" :text="'fa-map-marker' | fonticon" />
+            <Label color="white" marginLeft="5" text="Middelburg"/>
+          </FlexboxLayout>
+
+        </StackLayout>
       </GridLayout>
-      <FlexboxLayout backgroundColor="#3c495e" height="40">
-        <Label text="first" width="70" backgroundColor="#43b883"/>
-        <Label text="second" width="70" backgroundColor="#1c6b48"/>
-        <Label text="third" width="70" backgroundColor="#289062"/>
+      <FlexboxLayout backgroundColor="white" height="35" borderWidth="0,0,1,0" borderColor="grey">
+        <Label text="MESSAGES" marginLeft="5" marginRight="5" />
+        <Label text="IMPORTANT" marginLeft="5" marginRight="5" />
+        <Label text="FILES" marginLeft="5" marginRight="5" />
       </FlexboxLayout>
+      <FlexboxLayout backgroundColor="white" height="35" borderWidth="0,0,1,0" borderColor="grey">
+        <Label class="fa" @tap="createPost" fontSize="35" :text="'fa-plus-circle' | fonticon"/>
+      </FlexboxLayout>
+
       <ScrollView orientation="vertical" height="100%">
-        <FlexboxLayout marginTop="15px" orientation="vertical">
-            <Label  text="Recent messages"/>
-            <Label  text="sorting"/>
-        </FlexboxLayout>
-        <ListView for="post in posts" @itemTap="onPostTap" class="list-group">
+        <ListView for="post in posts" @itemTap="onPostTap" class="list-group" marginTop="5">
           <v-template>
             <!-- Shows the list item label in the default color and style. -->
-            <StackLayout backgroundColor="white" marginTop="5">
-              <GridLayout columns="50, *, 20" rows="65" marginTop="-10">
+            <StackLayout backgroundColor="lightgrey" >
+              <GridLayout columns="50, *, 20" rows="65" marginTop="-10" backgroundColor="white">
                 <Image 
                 col="0" row="0"
                   src="https://art.nativescript-vue.org/NativeScript-Vue-White-Green.png" 
@@ -42,28 +56,34 @@
                 </StackLayout>
                 <Label fontWeight="lighter" marginTop="-10" col="2" row="0" fontSize="20" class="fa" :text="'fa-ellipsis-v' | fonticon" />
               </GridLayout>
-              <Label :text="post.message" />
-              <Image v-if="post.img"
+              <Label :text="post.message" backgroundColor="white"/>
+            <StackLayout backgroundColor="white">
+
+              <Image v-if="post.img" 
                   src="https://art.nativescript-vue.org/NativeScript-Vue-White-Green.png" 
                   stretch="aspectFit"
                   width="350" height="350"
+                  backgroundColor="white"
               />
-              <FlexboxLayout alignItems="flex-start" orientation="vertical" flexDirection="row">
+            </StackLayout>
+              <FlexboxLayout alignItems="flex-start" orientation="vertical" flexDirection="row" backgroundColor="white">
                 <Label fontSize="10" :text="`${post.likes} likes`" />
                 <Label fontSize="10" :text="`${post.comments.length} comments`" />
                 <Label fontSize="10" alignSelf="flex-end" :text="`${post.seen}x seen`" />
               </FlexboxLayout>
-              <GridLayout class="borderedRight" rows="40" columns="*,*">
-                <TextView editable="false" row="0" col="0" class="borderedLeft" style="text-align: center">
+              <GridLayout rows="55" columns="*,*" backgroundColor="white">
+                <TextView editable="false" row="0" col="0" height="45" style="text-align: center" width="100%" class="borderRight">
                   <FormattedString >
-                    <Span class="fa" :text="'fa-thumbs-o-up' | fonticon" />
-                    <Span text="Like!" />
+                    <Span marginTop="3" class="fa" :text="'fa-thumbs-o-up' | fonticon" />
+                    <Span text="   "/>
+                    <Span marginTop="3" text="Like" />
                   </FormattedString>
                 </TextView>
-                <TextView editable="false" row="0" col="1" class="borderedRight" style="text-align: center" >
+                <TextView editable="false" row="0" col="1" height="45" style="text-align: center" width="100%" class="borderLeft">
                   <FormattedString>
-                    <Span class="fa" :text="'fa-thumbs-o-up' | fonticon" />
-                    <Span text="Like!" />
+                    <Span marginTop="3" class="fa" :text="'fa-comment-o' | fonticon" />
+                    <Span text="   "/>
+                    <Span marginTop="3" text="Reply" />
                   </FormattedString>
                 </TextView>
               </GridLayout>
@@ -76,10 +96,15 @@
 </template>
 
 <script>
+  import { gql } from "apollo-boost";
+  import { apolloClient } from '../../../app.js'
+
 
   export default {
+
     data() {
       return {
+        users: [{name: ''}],
         posts:[
           {
             user : {
@@ -108,7 +133,32 @@
         ]
       };
     },
+
+    async created(){
+      console.log('hoi');
+      apolloClient.query({
+        query: gql`
+        query{
+          FindUser{
+            name
+            email
+            _id
+          }
+        }`,
+        variables:{},
+      }).then((data) =>{
+        console.log(data.data.FindUser);
+        this.users = data.data.FindUser
+      })
+    },
     methods: {
+      createPost(){
+        try{
+          this.$navigator.navigate('/createPost')
+        } catch(e){
+          console.log(e);
+        }
+      },
       onPostTap(args) {
         console.log('clicked')
       }
@@ -127,21 +177,21 @@
     font-weight: 600;
     font-size: 20px;
   }
-  .borderedRight{
-    border-left:0.25px solid lightgray;
-    border-bottom: 0.5px solid lightgray;
-    border-top: 0.5px solid lightgray;
-    border-right:0.5px solid lightgray;
-    border-width: 1;
+
+  .borderRight{
+    margin-top: 40px;
+    margin-bottom: -20px;
+    border-width:  0.5 0.25 0 0;
     border-color:lightgray;
   }
-  .borderedLeft{
-    border-right:0.25px solid lightgray;
-    border-bottom: 0.5px solid lightgray;
-    border-top: 0.5px solid lightgray;
-    border-left:0.5px solid lightgray;
-    border-width: 1;
+  .borderLeft{
+    margin-top: 40px;
+    margin-bottom: -20px;
+    border-width:  0.5 0 0 0.25;
     border-color:lightgray;
+  }
+  .transparent{
+    background-color: rgba(255, 255, 255, 0.7);
   }
    ListView { separator-color: transparent; }
 </style>
