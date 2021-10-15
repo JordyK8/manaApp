@@ -99,7 +99,6 @@
   import { gql } from "apollo-boost";
   import { apolloClient } from '../../../app.js'
 
-
   export default {
 
     data() {
@@ -135,7 +134,6 @@
     },
 
     async created(){
-      console.log('hoi');
       apolloClient.query({
         query: gql`
         query{

@@ -12,6 +12,8 @@ import {
 } from "apollo-boost";
 import { onError } from "apollo-link-error";
 import { setContext } from "apollo-link-context";
+import VueDevtools from 'nativescript-vue-devtools'
+
 
 const errorLink = onError(({ graphQLErrors }) => {
     if (graphQLErrors) graphQLErrors.map(({ message }) => console.log(message));
@@ -27,8 +29,8 @@ const authLink = setContext((_, { headers }) => {
         headers: {
             ...headers,
             authorization: tokenInAppSettings
-                ? `Bearer ${tokenInAppSettings}`
-                : null
+            ? `Bearer ${tokenInAppSettings}`
+            : null
         }
     };
 });
@@ -38,8 +40,6 @@ export const apolloClient = new ApolloClient({
     cache: new InMemoryCache()
 })
 
-Vue.use(VueApollo);
-Vue.use(Navigator, { routes })
 
 const apolloProvider = new VueApollo({
     defaultClient: apolloClient,
@@ -52,15 +52,17 @@ TNSFontIcon.paths = {
 TNSFontIcon.loadCss();
 Vue.filter('fonticon', fonticon);
 
-
-
-
-Vue.filter('fonticon', fonticon);
-
 // Prints Vue logs when --env.production is *NOT* set while building
 Vue.config.silent = false
 
+const loggedIn = true
+const initialRoute = loggedIn ? '/home' : '/login'
+
+Vue.use(VueDevtools)
+Vue.use(VueApollo);
+Vue.use(Navigator, { routes })
+
 new Vue({
     apolloProvider,
-    render: h => h("Navigator", { attrs: { defaultRoute: '/home'}}),
+    render: h => h("Navigator", { attrs: { defaultRoute: initialRoute}}),
 }).$start();
