@@ -28,6 +28,7 @@
     "category-general"
   ],
   "dependencies": {
+    "@nativescript/background-http": "^5.0.2",
     "@nativescript/core": "~7.1.0",
     "@nativescript/imagepicker": "^1.0.5",
     "@nativescript/theme": "~2.3.0",
@@ -42,9 +43,14 @@
     "apollo-link-context": "^1.0.20",
     "apollo-link-error": "^1.1.13",
     "apollo-link-http": "^1.5.17",
+    "axios": "^0.23.0",
     "graphql": "^15.6.1",
     "graphql-tag": "^2.12.5",
+    "nativescript-background-http": "^4.2.1",
     "nativescript-fonticon": "^2.0.2",
+    "nativescript-localstorage": "^2.0.2",
+    "nativescript-mediafilepicker": "^4.0.2",
+    "nativescript-mediapicker": "^1.2.0",
     "nativescript-modal-datetimepicker": "^2.1.5",
     "nativescript-vue": "~2.8.0",
     "nativescript-vue-devtools": "^1.5.1",

@@ -23,18 +23,22 @@
           <StackLayout>
             <TextField v-model="messageContent" />
           </StackLayout>
+          <Button @tap="openImagePicker" >img</Button>
+          <Button @tap="openFilePicker" >file</Button>
         </StackLayout>
     </Page>
 </template>
 
 <script>
   import * as imagepicker from "@nativescript/imagepicker";
-  import { apolloClient } from '../../../app.js'
+  import * as bgHttp from "@nativescript/background-http";
+  import { Mediafilepicker, ImagePickerOptions, VideoPickerOptions, AudioPickerOptions, FilePickerOptions } from 'nativescript-mediafilepicker';
+  import { apolloClient } from '../../../app.js';
   import { gql } from "apollo-boost";
   import {Image} from 'tns-core-modules/ui/image';
-import {File, knownFolders, path} from 'tns-core-modules/file-system';
-import {ImageSource} from 'tns-core-modules/image-source';
-import fileSystemModule from "tns-core-modules/file-system";
+  import {File, knownFolders, path} from 'tns-core-modules/file-system';
+  import {ImageSource} from 'tns-core-modules/image-source';
+  import axios from 'axios'
 
 
   export default {
@@ -43,87 +47,95 @@ import fileSystemModule from "tns-core-modules/file-system";
       return {
         messageContent: '',
         imagePicker: imagepicker,
-        img: null,
-        imgg: null,
+        file: '',
+        imagePickerOptions: {
+          android: {
+            isCaptureMood: false, // if true then camera will open directly.
+            isNeedCamera: true,
+            maxNumberFiles: 1,
+            isNeedFolderList: true
+          }, ios: {
+            isCaptureMood: false, // if true then camera will open directly.
+            isNeedCamera: true,
+            maxNumberFiles: 1
+          }
+        },
+        filePickerOptions: {
+          android: {
+              extensions: ['txt', 'pdf'],
+              maxNumberFiles: 2
+          },
+          ios: {
+            extensions: [kUTTypePDF, kUTTypeText],
+            multipleSelection: true
+          }
+        },
+        mediafilepicker: new Mediafilepicker(),
       };
     },
-    mounted(){
-      this.openImagePicker()
-    },
+
     methods:{
       openImagePicker() {
-      const context = imagepicker.create({
-        mode: this.multiple ? 'multiple' : 'single',
-        minimumNumberOfSelection: 1,
-        maximumNumberOfSelection: 1,
-      });
-
-      context
-        .authorize()
-        .then(() => context.present())
-        .then((selection) => {
-          selection.forEach((selected) => {
-            let imageSource = new ImageSource();
-
-            imageSource.fromAsset(selected)
-              .then(() => {
-                if (selected.android) {
-                  this.saveFile(selected.android.toString());
-                } else {
-                  const ios = selected.ios;
-
-                  if (ios.mediaType === PHAssetMediaType.Image) {
-                    const opt = PHImageRequestOptions.new();
-                    opt.version = PHImageRequestOptionsVersion.Current;
-
-                    PHImageManager.defaultManager()
-                      .requestImageDataForAssetOptionsResultHandler(ios, opt, (imageData, dataUTI, orientation, info) => {
-                      this.imgg = imageData
-                      this.saveFile(info.objectForKey('PHImageFileURLKey').toString());
-                    });
-                  }
-                }
-              });
-          });
+        this.mediafilepicker.openImagePicker(this.imagePickerOptions);
+        
+        this.mediafilepicker.on("getFiles", function (res) {
+          let results = res.object.get("results");
+          console.log(results);
+          this.file = results
+        });
+        this.mediafilepicker.on("error", function (res) {
+          let msg = res.object.get("msg");
+          console.log(msg);
+        });
+        this.mediafilepicker.on("cancel", function (res) {
+          let msg = res.object.get("msg");
+          console.log(msg);
         });
       },
-      
-      saveFile(source, saveIt = false) {
-        const image = new Image();
-        const folderPath = knownFolders.documents().path;
 
-        image.src = source;
+      openFilePicker() {
+        this.mediafilepicker.openFilePicker(this.filePickerOptions);
 
-        const fileName = image.src.toString().split('/').pop();
-        const filePath = path.join(folderPath, fileName);
-        
-        if (saveIt) {
-          const imageSource = new ImageSource();
-          const saved = imageSource.saveToFile(filePath, 'png');
-
-          if (!saved) {
-            console.log('[UploadFile] - Cannot save file!');
-          }
-        }
-        
-        this.img = File.fromPath(filePath).readSync((err) => {
-          if(err) console.log('err', err);
+        this.mediafilepicker.on("getFiles", function (res) {
+          let results = res.object.get("results");
+          console.log(results);
+          this.file = results
         });
-        console.log('[UploadField] -->', fileName);
-      },
+        this.mediafilepicker.on("error", function (res) {
+          let msg = res.object.get("msg");
+          console.log(msg);
+        });
+        this.mediafilepicker.on("cancel", function (res) {
+          let msg = res.object.get("msg");
+          console.log(msg);
+        });
+    },
       
-      submit() {
-        const params = new FormData();
-        params.append('file', this.img);
-      
-        axios({
+      sendFile(id) {
+        console.log('id == ', id);
+        let session = bgHttp.session("image-upload");
+        let request = {
+          url: `http://192.168.1.63:8080/upload/${id}`,  // with user => localStorage.getItem("uid") + "/upload"   ,
+          method: "POST",
           headers: {
-            'Content-Type': 'multipart/form-data',
+            "Content-Type": "multipart/form-data"
           },
-          method: 'POST',
-          params,
-        })
-          .then((response) => console.log(response));
+          body: { id },
+          description: "FileName"
+        };
+        let params = [{
+          name: "file",
+          filename: this.mediafilepicker.results[0].file,
+          id,
+        }];
+        let task = session.multipartUpload(params, request);
+        task.on("error", (e) => {
+          console.log(e);
+          return false;
+        });
+        task.on("complete", (e) => {
+          return true
+        });
       },
 
       async postMessage(){
@@ -137,12 +149,16 @@ import fileSystemModule from "tns-core-modules/file-system";
               data: { 
                 message: this.messageContent,
                 user: "61630e3c0665df912b3d9d8a",
-                img: this.imgg
                 }
             }
           })
-          if(data.CreatePost) this.$navigator.back()
-          console.log('Post not created')
+          if(data.CreatePost) {
+            this.sendFile(data.CreatePost) 
+              ? this.$navigator.back()
+              : console.log('Something went wrong with sending file')
+          } else {
+            console.log('Post not created')
+          }
           // Show warning that somethign went wrong!
         } catch (e){
           // Show warning that somethign went wrong!
